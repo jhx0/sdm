@@ -1,0 +1,10 @@
+SDM is a very simple Display Manager entirely written in bash.
+
+To use it follow the steps below:
+
+1. Download/clone this repository
+2. Move sdm to a place of your choice (This might be somewhere in your $PATH or somewhere else - This is up to you)
+3. Put the sample .sdmrc into your home directory and edit it according to your needs
+   (One DE/WM per line)
+4. Go to a Linux console and execute sdm
+5. Enjoy :)

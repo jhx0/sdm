@@ -1,0 +1,106 @@
+#!/bin/bash
+
+# don't change these
+PRG_NAME='SDM - Simple Display Manager'
+PRG_NAME_SHORT='SDM'
+X_LOGFILE="$HOME/.Xlog"
+CONFIG_FILE="$HOME/.sdmrc"
+
+# this will hold the raw .sdmrc data
+CONFIG=''
+
+# return codes
+EXIT_SUCCESS=0
+EXIT_FAILURE=1
+
+# color definitions
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+RESET="\033[0m"
+
+error() {
+    echo -e "[${RED}ERROR${RESET}] SDM ${GREEN}::${RESET} $1"
+    exit $EXIT_FAILURE
+}
+
+info() {
+    echo -e "[${GREEN}INFO${RESET}] SDM ${GREEN}::${RESET} $1"
+    exit $EXIT_SUCCESS
+}
+
+init() {
+    case $(tty) in
+        *pts*)
+            error "Not a console, exiting!"
+            ;;
+    esac
+
+    which dialog >/dev/null
+    if [ $? -eq 1 ]; then
+        error "Application dialog is not installed, exiting!"
+    fi
+
+    if [ ! -f $CONFIG_FILE ]; then
+        error "Configuration file .sdmrc was not found, exiting!"
+    fi
+}
+
+read_conf() {
+    IFS=$'\n' read -d '' -r -a CONFIG < $CONFIG_FILE
+}
+
+start_dm() {
+    wm=$(tempfile 2>/dev/null)
+
+    declare -a menu_items
+
+    counter=0
+    for item in ${CONFIG[@]}; do
+        menu_items[$counter]=$item
+        menu_items[$counter+1]=""
+        counter+=2
+    done
+
+    for i in ${CONFIG[@]}; do
+        echo ">> $i"
+    done
+
+    dialog --backtitle "$PRG_NAME" \
+           --title "$PRG_NAME_SHORT" \
+           --menu "Choose" \
+           10 40 2 \
+           "${menu_items[@]}" \
+           2> $wm
+    clear
+
+    # check if returned value is empty
+    tmp=`cat $wm`
+
+    # remove tempfile asap
+    rm -f "$wm"
+
+    if [ -z $tmp ]; then
+        info "Nothing selected, exiting SDM. Bye."
+    fi
+
+    cat ~/.xinitrc > /tmp/.xinitrc-tmp
+    echo "exec $tmp" >> /tmp/.xinitrc-tmp
+
+    # start the selected session
+    startx /tmp/.xinitrc-tmp &> $X_LOGFILE
+
+    # cleanup
+    rm -f /tmp/.xinitrc-tmp
+}
+
+main() {
+    init
+
+    read_conf
+
+    start_dm
+
+    exit $EXIT_SUCCESS
+}
+
+main
