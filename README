@@ -8,3 +8,19 @@ To use it follow the steps below:
    (One DE/WM per line)
 4. Go to a Linux console and execute sdm
 5. Enjoy :)
+
+Important: Your .xinitrc should not contain a exec command. This will be handled from SDM.
+(SDM executes the selected WM/DE and takes the .xinitrc into account)
+
+For example:
+
+.xinitrc:
+setxkbmap us &
+xset s off &
+
+.sdmrc:
+i3
+dwm
+bspwm
+
+After executing SDM you can chose between the three WM's listed above.
