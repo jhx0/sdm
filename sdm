@@ -50,7 +50,7 @@ read_conf() {
 }
 
 start_dm() {
-    wm=$(tempfile 2>/dev/null)
+    wm=$(mktemp 2>/dev/null)
 
     declare -a menu_items
 
